@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load url from future %}
+{% block content %}
+
+<style>
+	#home-teaser {
+		margin-bottom:40px;
+		width:90%;
+		height:90%;
+	}
+
+	.jumbotron {
+		width:75%;
+		margin-left:auto;
+		margin-right:auto;
+	}
+	
+</style>
+<div class="container">
+	<div class="row">
+		<div class="jumbotron">
+			<img id="home-teaser" src="{% static "images/teaser.png" %}" class="img-rounded" style="width:100%" alt="Complexity Plots logo">
+			<p>To accompany our <a href="{% url 'paper' %}">Eurovis 2013 paper</a>, we have developed a web-enabled implementation of our complexity plot.
+			Our online tool allows you to upload your own input size versus measurement (e.g. algorithm runtime) <i>.csv</i> files to be analysed by our complexity estimator and plotted onto a complexity plot.
+			This tool is a work-in-progress, and all feedback is <a href="{% url 'contact' }">very welcome</a>.</p>
+			<p>We have a <a href="{% url 'about' %}">brief guide to the complexity plot</a> available if you don't have time to read our paper. Otherwise, you can upload your own measurements data or view a gallery of user-submitted visualizations below. Have fun!
+			<p style="padding-top:15px">
+				<a href="{% url 'create' %}" class="btn btn-primary btn-large">Create a Plot</a>
+				<a href="{% url 'browse' %}" class="btn btn-primary btn-large">View Sample Plots</a>
+			</p>
+		</div>
+	</div>
+</div>
+
+{% endblock %}

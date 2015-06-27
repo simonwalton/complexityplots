@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load url from future %}
+{% block title %}Contact Us{% endblock %}
+{% block content %}
+
+<script src="{% static "jquery.validate.js" %}"></script>
+<script>
+
+
+function csrfSafeMethod(method) {
+	// these HTTP methods do not require CSRF protection
+	return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+function sameOrigin(url) {
+	// test that a given url is a same-origin URL
+	// url could be relative or scheme relative or absolute
+	var host = document.location.host; // host + port
+	var protocol = document.location.protocol;
+	var sr_origin = '//' + host;
+	var origin = protocol + sr_origin;
+	// Allow absolute or scheme relative URLs to same origin
+	return (url == origin || url.slice(0, origin.length + 1) == origin + '/') ||
+		(url == sr_origin || url.slice(0, sr_origin.length + 1) == sr_origin + '/') ||
+		// or any other URL that isn't scheme relative or absolute i.e relative.
+		!(/^(\/\/|http:|https:).*/.test(url));
+}
+
+
+
+function ContactUs() {
+
+var csrftoken = $.cookie('csrftoken');
+
+$.ajaxSetup({
+	beforeSend: function(xhr, settings) {
+		if (!csrfSafeMethod(settings.type) && sameOrigin(settings.url)) {
+			// Send the token to same-origin, relative URLs only.
+			// Send the token only if the method warrants CSRF protection
+			// Using the CSRFToken value acquired earlier
+			xhr.setRequestHeader("X-CSRFToken", csrftoken);
+			settings.cache = false;
+		}
+	}
+});
+
+	var contactUs = {};
+	
+	function formToJSON() {
+		return JSON.stringify({
+			"name": $('#contactUsName').val(),
+			"email": $('#contactUsEmail').val(),
+			"subject": $('#contactUsSubject').val(),
+			"comments": $('#contactUsComments').val()
+		});
+	}
+	
+	function clearForm() {
+		$('#contactUsName').val('');
+		$('#contactUsEmail').val('');
+		$('#contactUsSubject').val('');
+		$('#contactUsComments').val('');
+	}
+	
+	function submitContactUs() {
+		console.log(formToJSON());
+		$.ajax({
+			type: 'POST',
+			contentType: 'application/json',
+			url: "{% url 'contact_send' %}",
+			data: formToJSON(),
+			csrfmiddlewaretoken: csrftoken,
+			dataType: 'json',
+			// if received a response from the server
+			success: function(data, textStatus, jqXHR) {				
+				if (data.success_message) { 
+					clearForm();
+					$('#successDisplay').show();
+				// otherwise error
+				} else {
+					$('#errorDisplay').show();			
+				}
+			},			
+			// If there was no response from the server
+            error: function(jqXHR, textStatus, errorThrown) {
+            	$('#errorDisplay').show();
+            }                        
+		});
+	}		
+	
+	function validateContactUs() {
+		$('#formContactUs').validate({
+			rules: {
+				contactUsName: 'required',
+				contactUsEmail: { 
+					required: true, 
+					email: true
+				},
+				contactUsSubject: 'required',
+				contactUsComments: 'required'
+			},
+			messages: {
+				contactUsName: 'Please enter your name',
+				contactUsEmail: { 
+					required: 'Please enter your email address', 
+					email: 'Please enter a valid email address'
+				},
+				contactUsSubject: 'Please enter a subject',
+				contactUsComments: 'Please enter comments'
+			},
+			errorClass: 'help-inline',
+			errorElement: 'span',
+			highlight: function(element, errorClass, validClass) {
+			      $(element).parents('.form-group').addClass('error');
+			    },
+			    unhighlight: function(element, errorClass, validClass) {
+			      $(element).parents('.form-group').removeClass('error');      
+			    },
+			    submitHandler: function(form) {
+			    	submitContactUs();
+			    },
+			    invalidHandler: function(form) {
+			    	$('#errorDisplay').show();
+			    }
+		});
+	}
+	
+	function setUpForm() {
+		$('#buttonSubmitContactUs').click(function(e) {
+			e.preventDefault();
+			$('#formContactUs').submit();	
+		});
+	}
+	
+	contactUs.setup = function() {
+		setUpForm();
+		validateContactUs();
+	};
+	
+	return contactUs;
+};
+
+$("document").ready(function() {
+	var contactUs = ContactUs();
+	contactUs.setup();
+});
+
+</script>
+
+<div class="container" id="maincont">
+	<div class="row-fluid">
+		<div class="span12">
+			<div class="page-header">
+				<h1>Contact us</h1>
+			</div>
+			<p>Please fill out the below form to contact our team, and we'll get back to you as soon as we can.</p>
+			<div>
+				<form class="form-horizontal" role="form" id="formContactUs" method="POST" action="/contact_send" style="width:700px">
+					{% csrf_token %}		
+					<div class="form-group">
+						<label for="contactUsName" class="col-lg-2 control-label">Name</label>
+						<div class="col-lg-10">
+							<input type="text" placeholder="William Shakespeare" name="contactUsName" id="contactUsName"
+							 class="form-control" required>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="contactUsEmail" class="col-lg-2 control-label">Email</label>
+						<div class="col-lg-10">
+							<input type="email" placeholder="email@example.com" name="contactUsEmail" id="contactUsEmail" 
+							class="form-control" required>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="contactUsSubject" class="col-lg-2 control-label">Subject</label>
+						<div class="col-lg-10">
+							<input type="text" class="form-control" placeholder="e.g., How to get in contact" name="contactUsSubject" id="contactUsSubject" required>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="contactUsComments" class="col-lg-2 control-label">Comments</label>
+						<div class="col-lg-10">
+							<textarea name="contactUsComments" id="contactUsComments" maxlength="5000" rows=10 
+							  class="form-control" required></textarea>
+						</div>
+					</div>
+					<div class="alert alert-error" style="display: none;" id="errorDisplay">
+						<button type="button" class="close" data-dismiss="alert">&times;</button>
+						<strong>Error!</strong> Your message cannot be sent. Please try again.
+					</div>
+					<div class="alert alert-success" style="display: none;" id="successDisplay">
+						<button type="button" class="close" data-dismiss="alert">&times;</button>
+						Your message has been been sent. Someone from the team will get in contact with you soon.
+					  </div>
+					<div class="form-group">
+						<div class="col-lg-offset-2 col-lg-10">
+							 <a class="btn btn-primary" href="#" id="buttonSubmitContactUs"><i class="icon-envelope icon-white"></i> 
+							 Submit</a>
+						</div>
+					</div>
+				</form>					
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

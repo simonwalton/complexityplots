@@ -1,0 +1,801 @@
+{% extends "base.html" %}
+
+{% block title %}Create{% endblock %}
+{% load staticfiles %}
+
+{% block html %}ng-app=chart{% endblock %}
+{% load url from future %}
+
+{% block content %}
+<style>
+	.cp_color_palette {
+		margin-bottom:10px;
+		height:25px;
+		width:100%;
+		clear:left;
+	}
+	.cp_color_palette_item {
+		width:15px;
+		height:15px;
+		float:left;
+		margin:0px;
+	}
+
+	#sidebar {
+		margin:10px;
+		position:fixed;
+		width:400px;
+		font-size:10pt;
+	}
+
+	#sidebar h1 {
+		font-size:16pt;
+		color:#888;
+		margin-top:5px;
+		padding-bottom:0px;
+		margin-bottom:-8px;
+	}
+
+	#sidebar h2 {
+		font-size:12pt;
+		margin-bottom:10px;
+	}
+
+	#sidebar h2:first-child {
+		margin-top:0px;
+	}
+
+	#sidebar .row:nth-child(n+2) {
+		margin-top:20px;
+	}
+
+	#dropzone {
+		width:500px;
+		height:300px;
+	}
+
+	#main-area {
+		width:800px;
+		padding:5px;
+		padding-left:20px;
+		margin-top:20px;
+		margin-left:420px;
+	}
+
+	#chart {
+		width:700px;
+		height:550px;
+		margin-top:20px;
+	}
+
+	#chart-main {
+		text-align:center;
+		padding:50px;
+		padding-top:100px;
+		color:#666;
+		background:#eee;
+		width:700px;
+		height:100%;
+	}
+
+	#chart-main-help {
+		margin:auto;
+		width:70%;
+	}
+
+	.input_file_item {
+		float:left;
+		height:20px;
+		padding-right:10px;
+	}
+
+	.file-preview {
+		visibility:hidden;
+	}
+
+	#line-thickness-slider
+	{
+		margin-bottom:20px;
+		margin:10px;
+	}
+
+	.icon-left {
+		padding-right:10px;
+	}
+
+	#chart-title {
+		width:700px;
+		height:110px;
+	}
+
+	#chart-title > div {
+		float:left;
+		padding-top:10px;
+	}
+
+	#chart-title-attr {
+		width:75%;
+		height:100px;
+	}
+
+	#classes_list {
+		clear:both;
+		height:35px;
+		width:100%;
+	}
+
+	.classcheck_container {
+		float:left;
+		padding:5px;
+	}
+
+	.classchecklabel {
+		margin-left:5px;
+		margin-right:12px;
+	}
+
+	#chart-title-controls {
+		width:25%;
+		text-align:right;
+		margin-top:10px;
+	}
+
+	input[type="text"].chart-title {
+		font-size:20pt;
+		height:30pt;
+		width:90%;
+		outline:none;
+		border:none;
+		box-shadow:none;
+		margin:3px;
+		padding:3px;
+	}
+
+	TEXTAREA.chart-desc {
+		font-size:14pt;
+		height:20pt;
+		width:90%;
+		outline:none;
+		border:none;
+		box-shadow:none;
+		margin:3px;
+		padding:3px;
+	}
+
+	input[type="text"].chart-title:hover, #chart-desc-edit:hover {
+		box-shadow: 0 0 5px #0088cc;
+	}
+
+	input[type="text"].edit-readonly {
+		outline:none;
+		border:0px solid white;
+		background:none;
+	}
+
+	input[type="text"].edit-readwrite {
+	}
+
+	TEXTAREA.edit-readonly {
+		outline:none;
+		border:0px solid white;
+		background:white;
+		resize:none;		
+	}
+
+	TEXTAREA.edit-readwrite {
+		resize:none;
+	}
+
+	#data-editor {
+		height:300px;
+		padding:10px;
+	}
+
+	#data-editor-series {
+		float:left;
+		width:95%;
+		height:95%;
+		margin-right:20px;
+		margin-top:5px;
+		overflow:auto;
+	}
+
+	#data-editor-csv {
+		float:left;
+		width:50%;
+		height:100%;
+	}
+
+	#data-editor-csv-textarea {
+		padding:10px;
+		width:100%;
+		height:200px;
+	}
+
+	#data-series-table {
+		width:100%;;
+	}
+
+	.data-series-row {
+		cursor:pointer;
+		width:100%;
+		padding:3px;
+	}
+
+
+</style>
+
+<script src="{% static "series-editor-django.js" %}"></script>
+<script src="{% static "series-editor-angular.js" %}"></script>
+<script src="{% static "jquery.fileupload.js" %}"></script>
+
+<script>
+
+// stop IE caching AJAX requests
+$.ajaxSetup({ cache: false });
+
+$.ajaxSetup({
+	beforeSend: function(xhr, settings) {
+		if (!csrfSafeMethod(settings.type) && sameOrigin(settings.url)) {
+			// Send the token to same-origin, relative URLs only.
+			// Send the token only if the method warrants CSRF protection
+			// Using the CSRFToken value acquired earlier
+			xhr.setRequestHeader("X-CSRFToken", csrftoken);
+			settings.cache = false;
+		}
+	}
+});
+
+
+var static_prefix = "{% static '' %}";
+var url_prefix = "{% url 'null' %}";
+url_prefix = url_prefix.replace("/null","");
+
+jQuery.extend({
+	parseQuerystring: function() {
+		var nvpair = {};
+		var qs = window.location.search.replace('?', '');
+		var pairs = qs.split('&');
+		$.each(pairs, function(i, v){
+			var pair = v.split('=');
+			nvpair[pair[0]] = pair[1];
+		});
+		return nvpair;
+	}
+});
+
+ModeEnum = {
+	VIEW:0,
+	EDIT:1
+};
+
+cp_init({% static "" %});
+
+var mode = ModeEnum.EDIT;
+var plot = null;
+var max_datasets = 8;
+
+create_plot = function() {
+	if(plot != null)
+		plot.destruct();
+
+	plot = new cp_plot();
+	plot.cp_width = 600;
+	plot.cp_height = 400;
+	plot.cp_margins = {top:20,right:20,bottom:70,left:80};
+	plot.cp_element_name = '#chart';
+	plot.cp_on_change = function() { user_save_and_send(); cp_ui_update(); }
+	plot.cp_style_defaults();
+	plot.cp_attr_defaults();
+
+	if(mode == ModeEnum.EDIT && !jQuery.cookie('userchoice_agreedtoterms'))
+		$("#terms-modal").modal("show");
+}
+
+// setup chart based on public/private choice
+user_agree = function() {
+	plot.cp_readonly = mode == ModeEnum.CREATE;
+}
+
+/*
+ * cp_ui_update
+ * Take the plot state from the plot object and set the UI appropriately
+ */
+cp_ui_update = function() {
+	 if(plot == null)
+		return;
+
+	if(mode != ModeEnum.EDIT) {
+		$(":input").prop("disabled",true);
+		$('.btn-primary').prop('disabled',true);
+		$('.btn-primary').hide();
+	}
+
+	$("#chart-title-edit").val(plot.cp_title);
+	$("#chart-desc-edit").val(plot.cp_desc);
+	$('#line-thickness-slider').slider("value",plot.cp_line_width);
+	$("#baseline-check").prop("checked",plot.cp_show_baseline);
+	$("#sci-check").prop("checked",plot.cp_use_sci_notation);
+	$("#autozoom-check").prop("checked",plot.cp_auto_zoom);
+	$("title").text("Complexity Plot | " + plot.cp_title);
+	$("#public-check").prop("checked",plot.cp_public);
+
+	$('.btn-colour-scheme').removeClass('active');
+	$('.btn-colour-scheme:eq(' + plot.cp_colour_scheme + ')').button('toggle');
+
+	if(plot.cp_has_data()) 
+		$('#chart-main').hide();
+	else 
+		$('#chart-main').show();
+	
+	if(!plot.cp_public)
+		$('#createanother-modal-text').html("Your current plot will become unrecoverable and a fresh plot created.");
+	else
+		$('#createanother-modal-text').html("Your current plot will be saved and a fresh plot created.");
+	
+	$(".classcheck").prop("checked",false);
+	$(".classchecklabel").attr("class","label label-default classchecklabel");
+	
+	for(var i in plot.cp_enabled_classes) {
+		var id = plot.cp_enabled_classes[i];
+		$("#classcheck_" + id).prop("checked",true);
+		$('#labelclasscheck_' + id).attr("class","label-success label classchecklabel");	
+	}
+
+	plot.cp_redraw();
+}
+
+error_display = function(str) {
+	$("#error-modal-text").html(str);
+	$("#error-modal").modal("show");
+}
+
+user_save_and_send = function() {
+	user_save();
+	user_send();
+
+	cp_ui_update();
+}
+
+max_datasets_check = function() {
+	reached = plot.cp_input_files.length == max_datasets;
+	if(reached)
+		alert("Sorry - you have reached the limit of the number of data series!");
+	return reached;
+}
+
+user_send = function() {
+	if(mode != ModeEnum.EDIT)
+		return;
+
+	$.ajax({
+		type: "POST",
+		url: "{% url 'save' %}",
+		cache: false,
+		context: document.body,
+		data: { 
+			title: plot.cp_title, 
+			description: plot.cp_desc,
+			input_files: plot.cp_input_files,
+			show_baseline: plot.cp_show_baseline,
+			use_sci_notation: plot.cp_use_sci_notation,
+			colour_scheme: plot.cp_colour_scheme,
+			line_width: plot.cp_line_width,
+			auto_zoom: plot.cp_auto_zoom,
+			public: plot.cp_public,
+			enabled_classes: plot.cp_enabled_classes
+		}
+	}).done(function(data) {
+		console.log("Saved user session.");
+		cp_ui_update();
+	});
+
+}
+
+user_save = function() {
+	if(plot == null)
+		return;
+
+	plot.cp_show_baseline = $("#baseline-check").prop("checked");
+	plot.cp_use_sci_notation = $('#sci-check').prop("checked");
+	plot.cp_title = $('#chart-title-edit').val(); 
+	plot.cp_desc = $('#chart-desc-edit').val();
+	plot.cp_line_width = +$('#line-thickness-slider').slider("option","value");
+	plot.cp_colour_scheme = +$('.btn-colour-scheme').index($('.active'));
+	plot.cp_auto_zoom = $("#autozoom-check").prop("checked");
+	plot.cp_public = $('#public-check').prop("checked");
+	plot.cp_enabled_classes = [];
+	$(".classcheck:checkbox:checked").each(function() {
+		var id = parseInt($(this).attr('id').split("_")[1]);
+		plot.cp_enabled_classes.push(id);
+	});
+}
+
+user_restore = function(json_data) {
+	if(json_data['error'] != null) {
+		error_display(json_data['error']);
+		return;
+	}
+
+	if(plot == null)
+		return;
+
+	plot.cp_set_input_files(eval(json_data['input_files']));
+	plot.cp_title = json_data['title'];
+	plot.cp_desc = json_data['description'];
+	plot.cp_colour_scheme = json_data['colour_scheme'];
+	plot.cp_use_sci_notation = json_data['use_sci_notation'];
+	plot.cp_line_width = json_data['line_width'];
+	plot.cp_auto_zoom = json_data['auto_zoom'];
+	plot.cp_public = json_data['public'];
+	plot.cp_enabled_classes = eval(json_data['enabled_classes']);
+
+	cp_ui_update();
+}
+
+user_revert = function() {
+	plot.cp_style_defaults();
+	cp_ui_update();
+}
+
+reload_page = function() {
+	window.location.reload();
+}
+
+user_print = function() {
+	window.open("{% url 'print' %}");
+}
+
+user_createanother = function() {
+	$('#createanother-modal-yes').click(
+		function(event) {
+			$.ajax({
+				cache:false,
+				url: "{% url 'session_createanother' %}",
+				context: document.body
+			}).done(function(data) {
+				create_plot();
+				reload_page();
+			});
+		}
+	);
+	$("#createanother-modal").modal("show");
+}
+
+chart_refresh_session = function() {
+	$.ajax({
+			cache:false,
+			url: "{% url 'data_for_session' %}",
+			context: document.body
+		}).done(function(data) {
+			user_restore(data);
+		});
+}
+
+chart_refresh_readonly = function() {
+	var qs = $.parseQuerystring();
+	$.ajax({
+			url: "{% url 'data_for_id' %}?id=" + qs['id'],
+			context: document.body
+		}).done(function(data) {
+			user_restore(data);
+		});
+}
+
+// chart refresh on page refresh
+chart_refresh = function() {
+
+	if(mode == ModeEnum.EDIT)
+		chart_refresh_session();
+	else
+		chart_refresh_readonly();
+}
+
+datasets_mouseenter = function() {
+	$("[data-toggle='tooltip']").tooltip();
+}
+
+datasets_updated = function() {
+	chart_refresh();
+}
+
+update_datasets = function() {
+	scope = angular.element($("#data-series-list")).scope();
+	scope.$apply(function() {
+		scope.updateAll();
+	});
+	scope.maxDatasets = max_datasets;
+}
+
+dataset_list_init = function() {
+	if(mode != ModeEnum.EDIT) {
+		$(".series-edit-link").empty();
+	}
+}
+
+function csrfSafeMethod(method) {
+	// these HTTP methods do not require CSRF protection
+	return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+function sameOrigin(url) {
+	// test that a given url is a same-origin URL
+	// url could be relative or scheme relative or absolute
+	var host = document.location.host; // host + port
+	var protocol = document.location.protocol;
+	var sr_origin = '//' + host;
+	var origin = protocol + sr_origin;
+	// Allow absolute or scheme relative URLs to same origin
+	return (url == origin || url.slice(0, origin.length + 1) == origin + '/') ||
+		(url == sr_origin || url.slice(0, sr_origin.length + 1) == sr_origin + '/') ||
+		// or any other URL that isn't scheme relative or absolute i.e relative.
+		!(/^(\/\/|http:|https:).*/.test(url));
+}
+
+var csrftoken = $.cookie('csrftoken');
+
+$("document").ready(function() {
+
+	var qs = $.parseQuerystring();
+	if(qs['id'] != null) {
+		console.log("Loading chart with id " + qs['id']);
+		mode = ModeEnum.VIEW;
+	}
+	else
+		mode = ModeEnum.EDIT;
+
+	$('#data-editor').fileupload({
+        dataType: 'json',
+		singleFileUploads: true,
+		headers: {
+			'X-CSRF-Token':  csrftoken
+	    },
+		url: "{% url 'file_upload' %}",
+        done: function (e, data) {
+			update_datasets();
+        },
+		submit: function(e,data) {
+			return !max_datasets_check();
+		}
+    });
+
+	var module = angular.module('chart', []);
+		module.config(["$httpProvider", function(provider) {
+			provider.defaults.headers.common['X-CSRF-Token'] = csrftoken;
+	}]);
+
+	$("#sidebar_colors").append(cp_color_choices_html());
+	$('#color_choices').button();
+	$('#color_choices').children().click(function(event) {
+		event.stopPropagation(); // prevent default bootstrap behavior
+		$('.btn-colour-scheme').removeClass('active');
+		$(this).toggleClass('active');
+		user_save_and_send(); 
+	});
+	$('#line-thickness-slider').slider({ min: 1, max:10, slide: user_save, stop: user_save_and_send} );
+
+	// create plot
+	create_plot();
+	// set some sensible defaults
+	user_revert();
+
+	/*
+	   create class list
+	*/
+	for(idx in plot.cp_class_names_html()) {
+		var name = plot.cp_class_names_html()[idx];
+		var con = $('<div />', { class:'classcheck_container' });
+
+		$('<input />', {type:'checkbox', id:'classcheck_' + idx, class: 'pull-left classcheck checkbox' }).appendTo($('<label />', { 'for': 'classcheck_' + idx, id:"labelclasscheck_" + idx, class:'label label-default classchecklabel' }).html(name).appendTo(con));
+		con.appendTo($("#classes_list"));
+	}
+
+	// set sensible max lengths
+	$('#chart-title-edit').attr('maxlength', 30);
+	$('#chart-desc-edit').attr('maxlength', 140);
+
+	/*
+	* Setup event handlers
+	*/
+	$('#agree-to-terms').click(function() {
+		var btn = $('#continue-terms');
+		if(btn.attr('disabled') == 'disabled')
+			btn.removeAttr("disabled");
+		else
+			btn.attr("disabled","disabled");
+	});
+
+	$('#continue-terms').click(function() {
+		if($('#agree-to-terms').prop("checked")) {
+			$("#terms-modal").modal("hide");
+
+			// remember this using some session cookies
+			//var pub = $("input[name=scope-terms]:checked","#terms-modal").val();
+			//jQuery.cookie('userchoice_datascope', pub);
+			jQuery.cookie('userchoice_agreedtoterms', "true");
+			
+			user_agree();
+		}
+	});
+
+	$(".classcheck").addClass("edit-readwrite");
+	$('.classcheck').change(function() { 
+
+		user_save_and_send(); 
+	});
+
+	if(mode == ModeEnum.EDIT) {
+		$(".ctl_save_send").click(user_save_and_send);	
+		$('.chart-text-edit').addClass("edit-readwrite").change(function() { user_save_and_send(); });
+		}
+	else {
+		$('.chart-text-edit').addClass("edit-readonly").attr("disabled","disabled");
+		$(":input").prop("disabled",true);
+		$('.btn-primary').prop('disabled',true);
+		$('.btn-primary').hide();
+		$('#classes_list').hide();
+	}
+
+	/*
+	* connect bits up
+	*/
+  
+	$("#baseline-a").attr("title","show the signature baseline &beta;. see section 3.3 in our paper.");
+	$("[data-toggle='tooltip']").tooltip();
+
+	chart_refresh();
+});
+
+</script>
+
+	<div id="sidebar">
+		<div class="well well-lg">
+			<div class="row" >
+				<div class="col-md-6">
+					<h2>Color scheme</h2>
+					<div id="sidebar_colors"></div>
+				</div>
+				<div class="col-md-6">
+					<h2>Presentation</h2>
+					<!--<label class="checkbox"><input type="checkbox" id="sci-check" class="ctl_save_send">Use scientific notation</label> -->
+					<label class="checkbox"><input type="checkbox" id="baseline-check" class="ctl_save_send">Show baseline <a href="#" id="baseline-a" data-html="true" data-toggle="tooltip" data-placement="right" data-container="body" title="f"><i class="glyphicon glyphicon-question-sign"></i></a></label>
+					<!--	<label class="checkbox"><input type="checkbox" id="autozoom-check" class="ctl_save_send">Auto-zoom on data</label> -->
+					<h2>Line Thickness</h2>
+					<div id="line-thickness-slider"></div>
+
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-6">
+					<h2>Plot Visibility</h2>
+					<label class="checkbox">
+					<input type="checkbox" name="public-check" id="public-check" class="ctl_save_send" checked>
+					Make plot public
+					</label>
+				</div>
+				<div class="col-md-6">
+					<a class="btn btn-primary pull-right" href="javascript:user_revert();" style="margin-bottom:0; margin-top:20px;">Revert to defaults</a>				
+				</div>
+			</div>
+		</div>
+		<div class="well well-lg">
+			<div id="data-editor">
+				<div class="row">
+					<div class="pull-left">
+						<h2>Data Series</h2>
+					</div>
+					<div class="pull-right">
+						<a class="" href="{% url 'data_format' %}"><i class="glyphicon glyphicon-question-sign"></i> Data format guide</a>
+					</div>
+				</div>
+				<div class="row" id="data-editor-series">
+					<div ng-view>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	<div id="main-area">
+		<div class="row" >
+			<div id="chart-title">
+				<div id="chart-title-attr">
+					<form>
+						<input id="chart-title-edit" class="chart-title chart-text-edit" type="text">
+						<textarea id="chart-desc-edit" class="chart-desc chart-text-edit"></textarea>
+					</form>
+				</div>
+				 <div id="chart-title-controls">
+					 <!--					<div><a class="btn btn-primary" href="javascript:user_nuke();">Remove all data</a></div> -->
+					<div style="padding-bottom:2px;"><a class="btn btn-primary" href="javascript:user_createanother();"><i class="glyphicon glyphicon-plus"></i> Create another plot</a></div>
+					<div><a id="print" class="btn btn-primary" href="javascript:user_print();"><i class="glyphicon glyphicon-print"></i> Print this plot</a></div>
+				</div>	
+			</div>
+			<div id="classes_list"></div>
+			<div id="chart">
+				<div id='chart-main'>
+					<div style="chart-main-help">
+						<h1>I'm just an empty Complexity Plot!</h1>
+						<p>You can give me some of your estimation data using the <b>Data Series</b> box to the left. Click the <i class="glyphicon glyphicon-plus-sign"></i> icon to add a new series.</p>
+						<p>For information on the CSV values that we expect, see the data format guide.</p>
+						<p>&nbsp;</p>
+						<p class="well well-info"><i class="glyphicon glyphicon-exclamation-sign"></i> If you have a modern browser, you can also drag your CSV file straight from your hard disk into the <b>Data Series</b> box.</b></p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Modal -->
+	<div id="terms-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h1 id="myModalLabel"><i class="glyphicon glyphicon-hand-right"></i> Welcome!</h1>
+				</div>
+				<div class="modal-body">
+					<p>In using our complexity plot creation tool, you agree to our terms outlined in the <a href="{% url 'privacy' %}" target="_new">privacy policy</a>. Your choice will be remembered for this browser session.
+				</div>
+				<div class="modal-footer">
+					<div class="none">
+						<div style="text-align:left">
+							<label class="checkbox" class="pull-left">
+								<input type="checkbox" class="pull-left" id="agree-to-terms">I agree to the terms in the privacy policy.
+							</label>
+						</div>
+						<!--<div style="text-align:left; margin-top:20px">
+							<label class="radio" class="pull-left">
+								<i class="icon icon-globe"></i>
+								<input type="radio" name="scope-terms" class="pull-left" value="public" checked>Let others see my plots
+							</label>
+							<label class="radio" class="pull-left">
+								<i class="icon icon-lock"></i>
+								<input type="radio" name="scope-terms" class="pull-left" value="private">Keep my plots private
+							</label>
+						</div-->
+
+						<div>
+							<button class="btn btn-primary" id="continue-terms" disabled>Continue</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- start another modal -->
+	<div id="createanother-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabelNuke" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h1 id="myModalLabelNuke">Are you sure?</h1>
+				</div>
+				<div class="modal-body">
+					<p id="createanother-modal-text"></p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+					<button type="button" class="btn btn-primary" id="createanother-modal-yes" data-dismiss="modal">Yes - create a new plot</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- error modal -->
+	<div id="error-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabelNuke" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h3 id="myModalLabelNuke">Problem!</h3>
+				</div>
+				<div class="modal-body">
+					<p id="error-modal-text"></p>
+				</div>
+				<div class="modal-footer">
+					<button class="btn" data-dismiss="modal" aria-hidden="true">OK</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+{% endblock %}
+

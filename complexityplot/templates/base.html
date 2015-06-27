@@ -1,0 +1,78 @@
+
+{% load staticfiles %}
+{% load url from future %}
+
+<!DOCTYPE html>
+<html {% block html %}{% endblock %}>
+<meta charset="utf-8">
+<head>
+<title>Complexity Plots</title>
+    <link href="{% static "bootstrap/css/bootstrap.css" %}" rel="stylesheet">
+    <link href="{% static "css/ui-lightness/jquery-ui-1.10.2.custom.min.css" %}" rel="stylesheet">
+	<meta http-equiv='cache-control' content='no-cache'>
+	<meta name="robots" content="noindex">
+	<link href="{% static "css/cp.css" %}" rel="stylesheet">
+    <style>
+    
+	.navbar {
+		margin-bottom:100px;
+	}
+
+    .container-narrow {
+        margin: 0 auto;
+        max-width: 700px;
+        margin-top:50px;
+      }
+      .container-narrow > hr {
+        margin: 30px 0;
+      }
+	#content {
+		margin-top:70px;
+	}
+
+	.nav li {
+		padding-top:10px;
+	}
+
+      #chart {
+    }
+    </style>
+   </head>
+
+<body>
+
+<script src="http://code.jquery.com/jquery.js"></script>
+<script src="{% static "d3.v3.min.js" %}"></script>
+<script src="{% static "bootstrap/js/bootstrap.min.js" %}"></script>
+<script src="{% static "cp.js" %}"></script>
+<script src="{% static "jqui.js" %}"></script>
+<script src="{% static "jquery.cookie.js" %}"></script>
+<script src="{% static "js/intro.min.js" %}"></script>
+<script src="{% static "js/angular.min.js" %}"></script>
+<script src="{% static "js/angular-resource.min.js" %}"></script>
+
+<div class="navbar navbar-fixed-top">
+    <div class="navbar-header">
+		<a class="navbar-brand" href="{% url 'intro' %}"><img src="{% static 'images/cp_logo.png' %}" style="height:50px"></a>
+    </div>
+	<div class="navbar-collapse collapse">
+		<ul class="nav navbar-nav">
+			<li><a href="{% url 'browse' %}">Browse</a></li>
+			<li><a href="{% url 'create' %}">Create</a></li>
+			<li><a href="{% url 'about' %}">About</a></li>
+			<li><a href="{% url 'paper' %}">Our Paper</a></li>
+			<li><a href="{% url 'privacy' %}">Privacy</a></li>
+			<li><a href="{% url 'contact' %}">Contact Us</a></li>
+	        </ul>
+	    </div>
+	</div>
+</div>
+
+<div id="content">
+
+	{% block content %}{% endblock %}
+
+</div>
+
+</body>
+</html>

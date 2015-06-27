@@ -1,0 +1,68 @@
+
+.page-header
+{
+	margin:10px;
+}
+
+.axis path,
+.axis line {
+	fill: none;
+	stroke: #666;
+	shape-rendering: crispEdges;
+}
+
+.x.axis path,
+.x.axis line {
+	fill:none;
+	stroke:#666;
+	shape-rendering: crispEdges;
+}
+
+.legend-circle {
+	cursor:pointer;
+}
+
+a {
+	color: #27AAE1;
+	text-decoration: none;
+	font-weight: bold;
+}
+
+a:hover {
+	color: #27AAE1;
+	text-decoration: none;
+}
+
+a:visited{
+	color: #27AAE1;
+	text-decoration: none;
+	font-weight: bold;
+}
+
+a.btn-primary,a.btn-danger,.a.btn-info {
+	color:#fff;
+}
+
+a:visited.btn-primary,a:visited.btn-danger,.a:visited.btn-info {
+	color:#fff;
+}
+
+
+.xbar {
+	stroke:#eee;
+}
+
+h1 {
+	font-size:24pt;
+	color:#555;
+}
+
+h2 {
+	font-size:16pt;
+	color:#555;
+}
+
+h3 {
+	font-size:12pt;
+	color:#555;
+}

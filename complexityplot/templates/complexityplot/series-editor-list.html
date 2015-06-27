@@ -1,0 +1,16 @@
+<table>
+  <thead>
+  <tr>
+    <th>Name</th>
+    <th><a href="#/new"><i class="icon-plus-sign"></i></a></th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr ng-repeat="series in data | filter:search | orderBy:'name'">
+    <td>{{series.name}}</a></td>
+    <td>
+      <a href="#/edit/{{series.guid}}"><i class="icon-pencil"></i></a>
+    </td>
+  </tr>
+  </tbody>
+</table>

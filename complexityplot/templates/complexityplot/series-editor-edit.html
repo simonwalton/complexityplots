@@ -1,0 +1,18 @@
+<form name="series-editor-form">
+  <div class="control-group" ng-class="{error: myForm.name.$invalid}">
+    <label>Name</label>
+    <input type="text" name="name" ng-model="series.name" required>
+    <span ng-show="myForm.name.$error.required" class="help-inline">
+        Required</span>
+  </div>
+
+  <label>CSV</label>
+  <textarea name="description" ng-model="series.csv"></textarea>
+ 
+  <br>
+  <a href="#/" class="btn">Cancel</a>
+  <button ng-click="save()" ng-disabled="isClean() || myForm.$invalid"
+          class="btn btn-primary">Save</button>
+  <button ng-click="destroy()"
+          ng-show="series.guid" class="btn btn-danger">Delete</button>
+</form>

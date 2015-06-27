@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load url from future %}
+
+{% block title %}Data Formats{% endblock %}
+
+{% block content %}
+
+<style>
+	.fig {
+		margin:10px;
+	}
+
+	.icon {
+		margin-right:1px;
+		margin-top:2px;
+	}
+	
+</style>
+
+<div class="container">
+	<div class="page-header">
+		<h1>Data Formats<small> For use with complexity plot creation</small></h1>
+	</div>
+	<div>
+		<img src="{% static "images/dataformat.png" %}" class="img pull-left fig" style="width:30%">
+		<h2>Preparing your data</h2>
+		<p>For each measurement, you (or your code) should generate CSV data containing two columns: <i>input size</i> and the <i>measurement</i> recorded for the input size. As shown to the left, we allow for the first line to be a nonnumerical column header, which will be ignored during parsing. </p>
+		<h2 style="">Parsing issues</h2>
+		<p>Should our server encounter issues in parsing, you will notice a warning next to the dataset in the data series list. Whilst our parser will make reasonable attempts to clean invalid values (such as empty strings or NaN's), please do ensure that the data is clean before uploading, containing only numerical values from row two onwards.</p>
+
+		<h2 style="clear:left">Example data files</h2>
+		<img src="{% static "images/dataformatexample.png" %}" class="img pull-right" style="width:40%">
+		<p>For reference, we have provided three example data files used to generate the figure to the right, and they can be downloaded in a zip file <a href="{% static "cp-example-data.zip" %}"><i class="icon icon-download"></i>here</a>.</p>
+		<p>The files represent timing measurements from three sorting algorithms, shown below. You can download each file individually by clicking on the filename.
+		<ul>
+			<li>Bubble sort - <a href="{% static "bubble-sort.csv" %}">bubble-sort.csv</a></li>
+			<li>Heap sort - <a href="{% static "heap-sort.csv" %}">heap-sort.csv</a></li>
+			<li>Insertion sort - <a href="{% static "insertion-sort.csv" %}">insertion-sort.csv</a></li>
+		</ul>
+		<p>Download the files, visit the <a href="{% url 'create' %}">creation app</a>, and provide the files one-by-one to the creation app to see the complexity of each data series appear on the complexity plot!</p>
+	</div>
+</div>
+{% endblock %}

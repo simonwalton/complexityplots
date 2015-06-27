@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load url from future %}
+
+{% block title %}About{% endblock %}
+{% block content %}
+
+<style>
+	.hero-unit {
+		margin-top:20px;
+		width:800px;
+	}
+	.hero-unit h1 {
+		font-size:36pt;
+	}
+
+	#home-teaser {
+		margin-top:20px;
+		margin-bottom:20px;
+		width:90%;
+		height:90%;
+	}
+
+	.fig {
+		margin-right:10px;
+	}
+	
+</style>
+
+<div class="container">
+	<div class="page-header">
+		<h1>About<small> Why complexity plots?</small></h1>
+	</div>
+	<div>
+		<img src="{% static "images/about1.png" %}" class="img-rounded pull-left fig" style="width:45%">
+		<h2>The trouble with existing plots</h2>
+		<p>One often wishes to measure the performance of algorithms or piece of "black box" software in terms of their algorithmic complexity. However, using traditional line graphs is problematic when attempting to visualise the complexity of such measurements. The figure to the left shows a linear <i>(left)</i> and a logarithmic <i>(right)</i> plot of a set of measurements with known complexity classes. The <i>x</i>-axis represents the input size, and the <i>y</i>-axis represents the measurement (e.g. runtime, energy usage, etc).</p>
+		<p>
+		It is easy to observe from the above figure that judging the complexity classes is difficult on both linear and logarithmic scales. Not only is it difficult to judge the complexity classes in each case, but additionally the varying constant components of the measurements can render some measurements invisible (for example, the n&sup2; class is not visible in the linear plot).
+		</p>
+		<h2>A new kind of plot</h2>
+		<img src="{% static "images/about2.png" %}" class="img-rounded pull-right fig" style="width:35%">
+		<p>It's clear that simply plotting measurements onto a line plot does not produce visualizations that are amenable to judging complexity. However, what if we can provide a new kind of spatial mapping to clearly present the varying complexity classes of algorithms with respect to their increasing input size? Well, it turns out that we can do just that. By using linear regression to obtain the characteristic properties of a set of data, a new kind of spatial mapping can be defined that maps input size verses measurement to input size verses complexity class. This is a <i>complexity plot</i>.<p>
+		<p>The complexity plot to the right shows, for varying input sizes on the <i>y</i>-axis, the complexity classes (on the <i>x</i>-axis) of a set of commonly-used sorting algorithms. It is now easy to observe the complexity classes of our measurements as they gradually 'settle down' and converge with larger amounts of data. In this case, the data size is defined as the size of the input array to sort.</p>
+		<h2>More information</h2>
+		<p>The complexity plot was created for a paper accepted to <a href="http://www.eurovis2013.de/">Eurovis 2013</a>. Its authors are based at Oxford's University's e-Research Centre: <a href="http://www.oerc.ox.ac.uk/people/jeyan-thiyagalingam">Jeyarajan Thiyagalingam<a>, <a href="http://www.oerc.ox.ac.uk/people/simon-walton">Simon Walton</a>, <a href="http://www.oerc.ox.ac.uk/people/Brian">Brian Duffy</a>, <a href="http://www.oerc.ox.ac.uk/people/anne-trefethen">Anne Trefethen</a>, and <a href="http://www.oerc.ox.ac.uk/people/min-chen">Min Chen</a>.</p>
+			For more details on the complexity plot visualization, including detail on the spatial mapping and complexity estimation techniques, please read our paper: <a href="{% url 'paper' %}">Complexity Plots (PDF)</a>. You can reference our work using <a href="{% static "cp.bib" %}">this bibtex entry</a>.</p>
+		<p class="well well-small">Is there a complexity class you'd like us to include for your dataset? <a href="{% url 'contact' %}">Contact us</a> and we can discuss its inclusion into our system!</p>
+				
+	</div>
+</div>
+{% endblock %}

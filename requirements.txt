@@ -1,0 +1,13 @@
+Django==1.5.1
+South==0.7.6
+distribute==0.6.35
+dj-database-url==0.2.1
+gunicorn==0.17.2
+heroku==0.1.2
+ipython==0.13.1
+numpy==1.7.0
+psycopg2==2.4.6
+python-dateutil==1.5
+requests==1.2.0
+virtualenv==1.9.1
+wsgiref==0.1.2

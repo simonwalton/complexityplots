@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block title %}Browse{% endblock %}
+
+{% block content %}
+
+	<style>
+		.pagination {
+			text-align:center;
+		}
+		.pagination > .step-links > .current {
+			margin-left:20px;
+			margin-right:20px;
+		}
+
+		.thumbnails {
+		}
+
+		.chart {
+			background-color:#eee;
+			z-index:10;
+		}
+
+		.thumbnail {
+			height:340px;
+			margin-top:10px;
+		}
+
+		.pagination ul > li > span {
+			border:0px;
+			border-radius:0px;
+			background:none;
+			font-size:12pt;
+		}
+
+		.caption > h1 {
+			font-size:12pt;
+			line-height:16pt;
+			color:#555;
+			background-color:rgba(255,255,255,0.9);
+			z-index:1000;
+			text-shadow: 1px 0px 0px #fff , 0px 1px 0px #fff, -1px 0px 0px #fff, 0px -1px 0px #fff, 2px 2px 5px #fff;
+		}
+
+		.caption > .description {
+			font-size:8pt;
+			line-height:8pt;
+			display:inline-block;
+			height:50px;
+		}
+
+		.xbar {
+			stroke:#DDD;
+		}
+
+	</style>
+
+<script>
+
+cp_init('{% static "" %}');
+plot_data = new Array(1000);
+plots_for_page = new Array(100);
+var plots = new Array();
+var IE = false;
+
+if (Function('/*@cc_on return document.documentMode===10@*/')()){
+	IE = true;
+}
+
+$("document").ready(function() {
+	$(".chart").each(function(idx, el) {
+		console.log(plot_data[idx]);
+		var data = eval(plot_data[idx]);
+		var plot = new cp_plot();
+		plot.cp_defaults();
+		plot.cp_width = 250;
+		plot.cp_height = 150;
+		plot.cp_use_legend = false;
+		plot.cp_show_y_axis = false;
+		plot.cp_auto_zoom = true;
+		plot.cp_show_x_axis_label = false;
+		plot.cp_vertical_x_labels = true;
+		plot.cp_margins = {top:0,right:0,bottom:0,left:0};
+		plot.cp_element_name = '#' + $(this).attr('id');
+		plot.cp_set_input_files(eval(data['input_files']));
+		plot.cp_title = data['title'];
+		plot.cp_colour_scheme = +data['colour_scheme'];
+		plot.cp_line_width = +data['line_width'];
+		plot.cp_redraw();
+
+		plots.push(plot);
+	});
+});
+
+function vis(idx) {
+	console.log("Vis " + idx);
+	window.location.href = "create?id=" +  plots_for_page[idx];
+}
+
+</script>
+
+<div class="page-header">
+	<h1>Browse<small> User-submitted Complexity Plots<small></h1>
+</div>
+<div class="container">
+	<div class="thumbnails row">
+	{% if plots %}
+		{% for plot in plots %}
+			<div class="col-md-3 col-sm-6">
+				<div class="thumbnail">
+					<div id="chart{{ forloop.counter }}" class="chart">
+						<script>
+							{% autoescape off %}
+							plot_data[{{ forloop.counter }} - 1] = {{ plot.json }};
+							plots_for_page[{{ forloop.counter }} - 1] = {{ plot.id }};
+							{% endautoescape %}
+						</script>
+					</div>
+					<div class="caption">
+						<h1>{{ plot.name }}</h1>
+						<span class="description">{{ plot.description }}</span>
+						<p><a href="javascript:vis({{ forloop.counter }} - 1);" class="btn btn-primary">Visualize</a></p>
+						<p>Contains {{plot.num_series}} data series.</p>
+					</div>
+				</div>
+			</div>	
+			{% if forloop.counter|divisibleby:"4" %}
+			</div><div class="row thumbnails">
+			{% endif %}
+		{% endfor %}
+	{% endif %}
+	</div>
+
+		<hr>
+		<ul class="pager">
+		{% if plots.has_previous %}
+			<li class=""><a href="?page={{ plots.previous_page_number }}">&larr; Prev</a></li>
+		{% else %}
+			<li class="disabled"><a href="#">&larr; Prev</a></li>
+		{% endif %}
+
+		<li>
+			<span class="current">
+				Page {{ plots.number }} of {{ plots.paginator.num_pages }}
+			</span>
+		</li>
+
+		{% if plots.has_next %}
+			<li class=""><a href="?page={{ plots.next_page_number }}">Next &rarr;</a></li>
+		{% else %}
+			<li class=""><a href="#">Next &rarr;</a></li>
+		{% endif %}
+		</span>
+</div>
+
+	</div>
+{% endblock %}

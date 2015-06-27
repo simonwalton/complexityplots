@@ -1,0 +1,80 @@
+
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<head>
+<title>Complexity Plot</title>
+    <link href="{% static "bootstrap/css/bootstrap.css" %}" rel="stylesheet">
+    <link href="{% static "css/ui-lightness/jquery-ui-1.10.2.custom.min.css" %}" rel="stylesheet">
+	<link href="{% static "css/cp.css" %}" rel="stylesheet">
+<script src="http://code.jquery.com/jquery.js"></script>
+	<script src="{% static "cp.js" %}"></script>
+<script src="{% static "d3.v3.min.js" %}"></script>
+
+
+<script>
+
+cp_init('{% static "" %}');
+
+var plot = new cp_plot();
+plot.cp_width = 600;
+plot.cp_height = 400;
+plot.cp_auto_zoom = true;
+plot.cp_margins = {top:20,right:20,bottom:70,left:80};
+plot.cp_element_name = '#chart'
+plot.cp_style_defaults();
+plot.cp_attr_defaults();
+
+$("document").ready(function() {
+	chart_refresh_session();
+});
+
+chart_refresh_session = function() {
+	console.log("Loading plot");
+	$.ajax({
+			url: "data_for_session",
+			context: document.body
+		}).done(function(data) {
+			user_restore(data);
+		});
+}
+
+user_restore = function(json_data) {
+	if(json_data['error'] != null) {
+		console.log("Error loading plot")
+		return;
+	}
+
+	console.log(json_data);
+
+	console.log("Loaded plot");
+
+	plot.cp_set_input_files(eval(json_data['input_files']));
+	plot.cp_title = json_data['title'];
+	plot.cp_desc = json_data['description'];
+	plot.cp_colour_scheme = json_data['colour_scheme'];
+	plot.cp_use_sci_notation = json_data['use_sci_notation'];
+	plot.cp_line_width = json_data['line_width'];
+	plot.cp_show_all_classes = json_data['show_all_classes'];
+	plot.cp_redraw();
+
+	$('#title').html(json_data['title']);
+	$('#desc').html(json_data['description']);
+
+	print();
+}
+
+</script>
+
+<div class="page-header">
+	<h1 id="title"></h1>
+	<p id="desc"></p>
+</div>
+<div class="container" id="chart">
+
+</div>
+
+</body>
+</html>

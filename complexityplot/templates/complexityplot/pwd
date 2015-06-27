@@ -1,0 +1,63 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<head>
+     <link href="{% static "bootstrap/css/bootstrap.css" %}" rel="stylesheet">
+    <link href="{% static "css/ui-lightness/jquery-ui-1.10.2.custom.min.css" %}" rel="stylesheet">
+	<link href="http://ovii.oerc.ox.ac.uk/PoemVis/css/common.css" rel="stylesheet">
+
+	<style>
+		.hero-unit {
+			margin-top:20px;
+		}
+		.hero-unit h1 {
+			font-size:36pt;
+		}
+
+		#home-teaser {
+			margin-top:20px;
+			margin-bottom:20px;
+			width:90%;
+			height:90%;
+		}
+		
+	</style>
+<body>
+
+ <noscript>
+    <div class="noscript">
+      <p>It appears that your web browser does not support JavaScript, or you have
+    temporarily disabled scripting. Either way, this site would not work without it.</p>
+    </div>    
+  </noscript>
+
+<div class="container" id="maincont">
+		<div class="row-fluid">
+			<div class="span12">
+				<div class="hero-unit">
+					<h1>Create your own Complexity Plot!</h1>
+					<img id="home-teaser" src="{% static "images/teaser.png" %}" class="img-rounded" alt="(Temporary image) Examples of complexity plots">
+					<p>To accompany our <a href="/paper">Eurovis 2013 paper</a>, we have developed a web-enabled implementation of our complexity plot.
+					Our online tool allows you to upload your own input size verses measurement (e.g. algorithm runtime) csv files to be analysed by our complexity estimator and plotted onto a complexity plot.
+					This tool is a work-in-progress, and all feedback is very welcome.</p>
+				    <p>
+						<a href="/create" class="btn btn-primary btn-large">Create a Plot</a>
+						<a href="/browse" class="btn btn-primary btn-large">View Sample Plots</a>
+			        </p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+<script src="http://code.jquery.com/jquery.js"></script>
+<script src="{% static "d3.v3.min.js" %}"></script>
+<script src="{% static "dropzone.js" %}"></script>
+<script src="{% static "bootstrap/js/bootstrap.min.js" %}"></script>
+<script src="{% static "cp.js" %}"></script>
+<script src="{% static "jqui.js" %}"></script>
+
+
+</body>
+</html>

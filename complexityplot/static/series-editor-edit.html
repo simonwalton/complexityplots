@@ -1,0 +1,30 @@
+<form class="form-horizontal" name="series-editor-form" id="series-editor-form">
+	<div class="form-group">
+		<div class="col-lg-3">
+			<label for="series-name">Name</label>
+		</div>
+		<div class="col-lg-9">
+			<input type="text" class="form-control" name="series-name" id="series-name" ng-model="series.name" placeholder="E.G. Bubble Sort" required>
+			<span ng-show="myForm.name.$error.required" class="help-inline">
+				Required</span>
+			</div>
+		</div>
+	</div>
+	<div class="form-group">
+		<div class="col-lg-3">
+			<label for="series-csv">CSV</label>
+		</div>
+		<div class="col-lg-9">
+			<textarea class="form-control" name="description" id="series-csv" ng-model="series.csv" placeholder="Paste your measurement data here" rows=7></textarea>
+		</div>
+	</div>
+	<div class="form-group">
+		<div class="col-lg-offset-3 col-lg-9">
+			<a href="#/" class="btn">Cancel</a>
+			<button ng-click="save()" ng-disabled="isClean() || myForm.$invalid"
+				class="btn btn-primary">Save</button>
+			<button ng-click="destroy()"
+				ng-show="series.guid" class="btn btn-danger">Delete</button>
+		</div>
+	</div>
+</form>
