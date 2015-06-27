@@ -6,10 +6,16 @@ This is web-based implementation of the technique found in our Eurovis 2013 pape
 
 A full working demo can be found at the [Complexity Plots website](http://ovii.oerc.ox.ac.uk/cp). 
 
-## Running
+## Building
 
-The web application is backed by a Django 1.6 application which provides the complexity estimation code and handles user submission of algorithm timings. Though the two can be run independently (and they are in fact on our ovii server), you can run them both on your local machine simply with
+The web application is backed by a Django 1.6 application which provides the complexity estimation code and handles user submission of algorithm timings. 
+
+To install the Python library requirements, run:
+
+    pip install -r requirements.txt
+
+Though the client and server can be run independently (and they are in fact run as such our ovii server), you can run them both on your local machine simply with:
 
     python manage.py runserver
   
-To run django's built-in HTTP server. 
+Which will run django's built-in HTTP server. 
