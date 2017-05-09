@@ -14,6 +14,11 @@ To install the Python library requirements, run:
 
     pip install -r requirements.txt
 
+To initialise the database (SQLite is used by default), run:
+    
+    run python manage.py syncdb
+
+
 ## Running
 
 Though the client and server can be run independently (and they are in fact run as such our ovii server), you can run them both on your local machine simply with:
