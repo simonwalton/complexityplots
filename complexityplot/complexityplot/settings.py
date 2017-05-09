@@ -5,6 +5,8 @@ import os
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) 
+
 ADMINS = (
     ('Simon Walton', 'simon.walton@oerc.ox.ac.uk'),
 )
@@ -63,9 +65,9 @@ MEDIA_URL = ''
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/var/www/example.com/static/"
-STATIC_ROOT = "/Users/sim/Documents/ComplexityPlot/Web/complexityplot/"
+STATIC_ROOT = BASE_DIR
 
-BASE_DIR = "/Users/sim/Documents/ComplexityPlot/Web/complexityplot/"
+BASE_DIR = BASE_DIR
 
 # URL prefix for static files.
 # Example: "http://example.com/static/", "http://static.example.com/"
@@ -123,7 +125,7 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    "/Users/sim/Documents/ComplexityPlot/Web/complexityplot/templates/"
+    os.path.normpath(os.path.join(BASE_DIR, 'templates'))
 )
 
 INSTALLED_APPS = (
