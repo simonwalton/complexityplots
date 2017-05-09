@@ -16,7 +16,7 @@ To install the Python library requirements, run:
 
 To initialise the database (SQLite is used by default), run:
     
-    run python manage.py syncdb
+    python manage.py syncdb
 
 
 ## Running
