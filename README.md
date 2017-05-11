@@ -14,6 +14,10 @@ To install the Python library requirements, run:
 
     pip install -r requirements.txt
 
+or, if you want to use Postgres as the dabase backend:
+
+    pip install -r requirements-postgres.txt
+
 To initialise the database (SQLite is used by default), run:
     
     python manage.py syncdb
